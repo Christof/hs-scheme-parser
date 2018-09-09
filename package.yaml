@@ -1,0 +1,20 @@
+name: hs-scheme-parser
+version: 0.0.1
+synopsis: Scheme compiler written in Haskell
+description: See README at <https://github.com/christof/hs-scheme-parser>
+maintainer: Christof Sirk <christof.sirk@gmail.com>
+github: christof/hs-scheme-parser
+category: Development
+extra-source-files:
+  - README.md
+
+ghc-options: -Wall
+
+dependencies:
+  - base >= 4.9 && < 5
+  - parsec
+
+executable:
+  main: parser.hs
+  source-dirs: .
+
