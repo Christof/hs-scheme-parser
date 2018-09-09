@@ -16,6 +16,13 @@ spaces = skipMany1 space
 symbol :: Parser Char
 symbol = oneOf "!#$%&|*+-/:<=>?@^_~"
 
+parseString :: Parser LispVal
+parseString = do
+  _ <- char '"'
+  x <- many (noneOf "\"")
+  _ <- char '"'
+  return $ String x
+
 readExpr :: String -> String
 readExpr input =
   case parse (spaces >> symbol) "lisp" input of
