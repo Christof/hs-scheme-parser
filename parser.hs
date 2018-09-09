@@ -16,6 +16,17 @@ spaces = skipMany1 space
 symbol :: Parser Char
 symbol = oneOf "!#$%&|*+-/:<=>?@^_~"
 
+parseAtom :: Parser LispVal
+parseAtom = do
+  first <- letter <|> symbol
+  rest <- many (letter <|> digit <|> symbol)
+  let atom = first : rest
+  return $
+    case atom of
+      "#t" -> Bool True
+      "#f" -> Bool False
+      _    -> Atom atom
+
 parseString :: Parser LispVal
 parseString = do
   _ <- char '"'
