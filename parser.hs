@@ -38,11 +38,14 @@ parseString = do
   _ <- char '"'
   return $ String x
 
+parseExpr :: Parser LispVal
+parseExpr = parseAtom <|> parseString <|> parseNumber
+
 readExpr :: String -> String
 readExpr input =
-  case parse (spaces >> symbol) "lisp" input of
-    Left err  -> "No match: " ++ show err
-    Right val -> "Found value: " ++ show val
+  case parse parseExpr "lisp" input of
+    Left err -> "No match: " ++ show err
+    Right _  -> "Found value!"
 
 main :: IO ()
 main = do
