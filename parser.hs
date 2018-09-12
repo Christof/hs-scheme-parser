@@ -41,11 +41,17 @@ parseString = do
 parseList :: Parser LispVal
 parseList = liftM List $ sepBy parseExpr spaces
 
+parseDottedList :: Parser LispVal
+parseDottedList = do
+  head <- endBy parseExpr spaces
+  tail <- char '.' >> spaces >> parseExpr
+  return $ DottedList head tail
+
 parseExpr :: Parser LispVal
 parseExpr =
   parseAtom <|> parseString <|> parseNumber <|> do
     _ <- char '('
-    x <- try parseList
+    x <- try parseList <|> parseDottedList
     _ <- char ')'
     return x
 
