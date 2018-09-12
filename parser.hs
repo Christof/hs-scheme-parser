@@ -77,13 +77,17 @@ showVal (DottedList head tail) =
 instance Show LispVal where
   show = showVal
 
-readExpr :: String -> String
+eval :: LispVal -> LispVal
+eval val@(String _)             = val
+eval val@(Number _)             = val
+eval val@(Bool _)               = val
+eval (List [Atom "quote", val]) = val
+
+readExpr :: String -> LispVal
 readExpr input =
   case parse parseExpr "lisp" input of
-    Left err  -> "No match: " ++ show err
-    Right val -> "Found value: " ++ show val
+    Left err  -> String $ "No match: " ++ show err
+    Right val -> val
 
 main :: IO ()
-main = do
-  (expr:_) <- getArgs
-  putStrLn (readExpr expr)
+main = getArgs >>= print . eval . readExpr . head
