@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 03dd052b6f83800f94c659d55da7e0d8208a87673c06442c83961abac7c40f79
+-- hash: c8e5bf05698d30750d2e315a1ba1e2c59e634b95b65f041036fc68b1b9c95201
 
 name:           hs-scheme-parser
 version:        0.0.1
@@ -28,7 +28,7 @@ executable hs-scheme-parser
       Paths_hs_scheme_parser
   hs-source-dirs:
       ./.
-  ghc-options: -Wall
+  ghc-options: -Wall -fno-warn-name-shadowing
   build-depends:
       base >=4.9 && <5
     , parsec

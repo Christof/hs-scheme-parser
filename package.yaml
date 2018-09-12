@@ -8,7 +8,7 @@ category: Development
 extra-source-files:
   - README.md
 
-ghc-options: -Wall
+ghc-options: -Wall -fno-warn-name-shadowing
 
 dependencies:
   - base >= 4.9 && < 5
