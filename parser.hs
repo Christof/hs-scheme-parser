@@ -38,8 +38,16 @@ parseString = do
   _ <- char '"'
   return $ String x
 
+parseList :: Parser LispVal
+parseList = liftM List $ sepBy parseExpr spaces
+
 parseExpr :: Parser LispVal
-parseExpr = parseAtom <|> parseString <|> parseNumber
+parseExpr =
+  parseAtom <|> parseString <|> parseNumber <|> do
+    _ <- char '('
+    x <- try parseList
+    _ <- char ')'
+    return x
 
 readExpr :: String -> String
 readExpr input =
