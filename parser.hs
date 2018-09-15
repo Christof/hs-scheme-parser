@@ -29,9 +29,8 @@ parseDecimal = many1 digit >>= (return . Number . read)
 
 parseExplicitDecimal :: Parser LispVal
 parseExplicitDecimal = do
-  try $ string "#d"
-  x <- many1 digit
-  (return . Number . read) x
+  _ <- try $ string "#d"
+  parseDecimal
 
 parseNumber :: Parser LispVal
 parseNumber = parseDecimal <|> parseExplicitDecimal
