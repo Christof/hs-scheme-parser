@@ -28,28 +28,26 @@ parseAtom = do
 parseDecimal :: Parser LispVal
 parseDecimal = many1 digit >>= (return . Number . read)
 
+parseExplicit :: String -> Parser Char -> (String -> Integer) -> Parser LispVal
+parseExplicit prefix digitParser conversion = do
+  _ <- try $ string prefix
+  x <- many1 digitParser
+  (return . Number . conversion) x
+
 parseExplicitDecimal :: Parser LispVal
-parseExplicitDecimal = do
-  _ <- try $ string "#d"
-  parseDecimal
+parseExplicitDecimal = parseExplicit "#d" digit read
 
 hexToDigit :: (Eq a, Num a) => String -> a
 hexToDigit x = fst $ readHex x !! 0
 
 parseHex :: Parser LispVal
-parseHex = do
-  _ <- try $ string "#h"
-  x <- many1 hexDigit
-  (return . Number . hexToDigit) x
+parseHex = parseExplicit "#h" hexDigit hexToDigit
 
 octToDigit :: (Eq a, Num a) => String -> a
 octToDigit x = fst $ readOct x !! 0
 
 parseOct :: Parser LispVal
-parseOct = do
-  _ <- try $ string "#o"
-  x <- many1 octDigit
-  return $ Number (octToDigit x)
+parseOct = parseExplicit "#o" octDigit octToDigit
 
 binToDigit :: [Char] -> Integer
 binToDigit = binToDigit' 0
@@ -67,10 +65,7 @@ binToDigit' digint (x:xs) =
 binDigit = oneOf "10"
 
 parseBin :: Parser LispVal
-parseBin = do
-  _ <- try $ string "#b"
-  x <- many1 binDigit
-  return $ Number (binToDigit x)
+parseBin = parseExplicit "#b" binDigit binToDigit
 
 parseNumber :: Parser LispVal
 parseNumber =
