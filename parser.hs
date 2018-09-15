@@ -104,6 +104,14 @@ isList :: [LispVal] -> LispVal
 isList [List _] = Bool True
 isList _        = Bool False
 
+symbolToString :: [LispVal] -> LispVal
+symbolToString [Atom s] = String s
+symbolToString _        = String ""
+
+stringToSymbol :: [LispVal] -> LispVal
+stringToSymbol [String s] = Atom s
+stringToSymbol _          = Atom ""
+
 primitives :: [(String, [LispVal] -> LispVal)]
 primitives =
   [ ("+", numericBinop (+))
@@ -118,6 +126,8 @@ primitives =
   , ("symbol?", isSymbol)
   , ("boolean?", isBoolean)
   , ("list?", isList)
+  , ("symbol->string", symbolToString)
+  , ("string->symbol", stringToSymbol)
   ]
 
 apply :: String -> [LispVal] -> LispVal
