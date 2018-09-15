@@ -15,18 +15,14 @@ spaces :: Parser ()
 spaces = skipMany1 space
 
 symbol :: Parser Char
-symbol = oneOf "!#$%&|*+-/:<=>?@^_~"
+symbol = oneOf "!$%&|*+-/:<=>?@^_~"
 
 parseAtom :: Parser LispVal
 parseAtom = do
   first <- letter <|> symbol
   rest <- many (letter <|> digit <|> symbol)
   let atom = first : rest
-  return $
-    case atom of
-      "#t" -> Bool True
-      "#f" -> Bool False
-      _    -> Atom atom
+  return $ Atom atom
 
 parseNumber :: Parser LispVal
 parseNumber = liftM (Number . read) $ many1 digit
@@ -49,6 +45,11 @@ parseString = do
   _ <- char '"'
   return $ String x
 
+parseBool :: Parser LispVal
+parseBool = do
+  _ <- char '#'
+  (char 't' >> return (Bool True)) <|> (char 'f' >> return (Bool False))
+
 parseList :: Parser LispVal
 parseList = liftM List $ sepBy parseExpr spaces
 
@@ -66,7 +67,7 @@ parseQuoted = do
 
 parseExpr :: Parser LispVal
 parseExpr =
-  parseAtom <|> parseString <|> parseNumber <|> parseQuoted <|> do
+  parseAtom <|> parseString <|> parseNumber <|> parseBool <|> parseQuoted <|> do
     _ <- char '('
     x <- try parseList <|> parseDottedList
     _ <- char ')'
