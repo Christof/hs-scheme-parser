@@ -51,8 +51,30 @@ parseOct = do
   x <- many1 octDigit
   return $ Number (octToDigit x)
 
+binToDigit :: [Char] -> Integer
+binToDigit = binToDigit' 0
+
+binToDigit' :: Integer -> [Char] -> Integer
+binToDigit' digint "" = digint
+binToDigit' digint (x:xs) =
+  let old =
+        2 * digint +
+        (if x == '0'
+           then 0
+           else 1)
+   in binToDigit' old xs
+
+binDigit = oneOf "10"
+
+parseBin :: Parser LispVal
+parseBin = do
+  _ <- try $ string "#b"
+  x <- many1 binDigit
+  return $ Number (binToDigit x)
+
 parseNumber :: Parser LispVal
-parseNumber = parseDecimal <|> parseExplicitDecimal <|> parseHex <|> parseOct
+parseNumber =
+  parseDecimal <|> parseExplicitDecimal <|> parseHex <|> parseOct <|> parseBin
 
 escapedChars :: Parser Char
 escapedChars = do
