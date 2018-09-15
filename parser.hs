@@ -42,8 +42,17 @@ parseHex = do
   x <- many1 hexDigit
   (return . Number . hexToDigit) x
 
+octToDigit :: (Eq a, Num a) => String -> a
+octToDigit x = fst $ readOct x !! 0
+
+parseOct :: Parser LispVal
+parseOct = do
+  _ <- try $ string "#o"
+  x <- many1 octDigit
+  return $ Number (octToDigit x)
+
 parseNumber :: Parser LispVal
-parseNumber = parseDecimal <|> parseExplicitDecimal <|> parseHex
+parseNumber = parseDecimal <|> parseExplicitDecimal <|> parseHex <|> parseOct
 
 escapedChars :: Parser Char
 escapedChars = do
