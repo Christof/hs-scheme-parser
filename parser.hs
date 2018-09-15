@@ -31,10 +31,16 @@ parseAtom = do
 parseNumber :: Parser LispVal
 parseNumber = liftM (Number . read) $ many1 digit
 
+escapedChars :: Parser Char
+escapedChars = do
+  _ <- char '\\'
+  x <- oneOf "\\\""
+  return x
+
 parseString :: Parser LispVal
 parseString = do
   _ <- char '"'
-  x <- many (noneOf "\"")
+  x <- many $ escapedChars <|> noneOf "\\\""
   _ <- char '"'
   return $ String x
 
