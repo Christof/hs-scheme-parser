@@ -90,6 +90,10 @@ unpackNum (String n) =
 unpackNum (List [n]) = unpackNum n
 unpackNum _ = 0
 
+isString :: [LispVal] -> LispVal
+isString [String _] = Bool True
+isString _          = Bool False
+
 primitives :: [(String, [LispVal] -> LispVal)]
 primitives =
   [ ("+", numericBinop (+))
@@ -99,6 +103,7 @@ primitives =
   , ("mod", numericBinop mod)
   , ("quotient", numericBinop quot)
   , ("remainder", numericBinop rem)
+  , ("string?", isString)
   ]
 
 apply :: String -> [LispVal] -> LispVal
