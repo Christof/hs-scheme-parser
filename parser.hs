@@ -24,8 +24,17 @@ parseAtom = do
   let atom = first : rest
   return $ Atom atom
 
+parseDecimal :: Parser LispVal
+parseDecimal = many1 digit >>= (return . Number . read)
+
+parseExplicitDecimal :: Parser LispVal
+parseExplicitDecimal = do
+  try $ string "#d"
+  x <- many1 digit
+  (return . Number . read) x
+
 parseNumber :: Parser LispVal
-parseNumber = liftM (Number . read) $ many1 digit
+parseNumber = parseDecimal <|> parseExplicitDecimal
 
 escapedChars :: Parser Char
 escapedChars = do
