@@ -1,4 +1,5 @@
 import           Control.Monad
+import           Numeric
 import           System.Environment
 import           Text.ParserCombinators.Parsec hiding (spaces)
 
@@ -32,8 +33,17 @@ parseExplicitDecimal = do
   _ <- try $ string "#d"
   parseDecimal
 
+hexToDigit :: (Eq a, Num a) => String -> a
+hexToDigit x = fst $ readHex x !! 0
+
+parseHex :: Parser LispVal
+parseHex = do
+  _ <- try $ string "#h"
+  x <- many1 hexDigit
+  (return . Number . hexToDigit) x
+
 parseNumber :: Parser LispVal
-parseNumber = parseDecimal <|> parseExplicitDecimal
+parseNumber = parseDecimal <|> parseExplicitDecimal <|> parseHex
 
 escapedChars :: Parser Char
 escapedChars = do
