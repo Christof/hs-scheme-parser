@@ -94,6 +94,10 @@ isString :: [LispVal] -> LispVal
 isString [String _] = Bool True
 isString _          = Bool False
 
+isNumber :: [LispVal] -> LispVal
+isNumber [Number _] = Bool True
+isNumber _          = Bool False
+
 primitives :: [(String, [LispVal] -> LispVal)]
 primitives =
   [ ("+", numericBinop (+))
@@ -104,6 +108,7 @@ primitives =
   , ("quotient", numericBinop quot)
   , ("remainder", numericBinop rem)
   , ("string?", isString)
+  , ("number?", isNumber)
   ]
 
 apply :: String -> [LispVal] -> LispVal
