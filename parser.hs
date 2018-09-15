@@ -34,8 +34,13 @@ parseNumber = liftM (Number . read) $ many1 digit
 escapedChars :: Parser Char
 escapedChars = do
   _ <- char '\\'
-  x <- oneOf "\\\""
-  return x
+  x <- oneOf "\\\"nrt"
+  return $
+    case x of
+      'n' -> '\n'
+      'r' -> '\r'
+      't' -> '\t'
+      _   -> x -- for \\ and "
 
 parseString :: Parser LispVal
 parseString = do
