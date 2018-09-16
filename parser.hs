@@ -9,6 +9,7 @@ data LispVal
   | DottedList [LispVal]
                LispVal
   | Number Integer
+  | Character Char
   | String String
   | Bool Bool
 
@@ -94,6 +95,21 @@ parseBool = do
   _ <- char '#'
   (char 't' >> return (Bool True)) <|> (char 'f' >> return (Bool False))
 
+parseChar :: Parser LispVal
+parseChar = do
+  _ <- try $ string "#\\"
+  x <-
+    try (string "newline" <|> string "space") <|> do
+      x <- anyChar
+      notFollowedBy alphaNum
+      return [x]
+  return $
+    Character $
+    case x of
+      "space"   -> ' '
+      "newline" -> '\n'
+      otherwise -> (x !! 0)
+
 parseList :: Parser LispVal
 parseList = liftM List $ sepBy parseExpr spaces
 
@@ -111,7 +127,9 @@ parseQuoted = do
 
 parseExpr :: Parser LispVal
 parseExpr =
-  parseAtom <|> parseString <|> parseNumber <|> parseBool <|> parseQuoted <|> do
+  parseAtom <|> try parseNumber <|> try parseBool <|> try parseChar <|>
+  parseString <|>
+  parseQuoted <|> do
     _ <- char '('
     x <- try parseList <|> parseDottedList
     _ <- char ')'
@@ -122,6 +140,7 @@ unwordsList = unwords . map showVal
 
 showVal :: LispVal -> String
 showVal (String contents) = "\"" ++ contents ++ "\""
+showVal (Character contents) = "#\\" ++ [contents]
 showVal (Atom name) = name
 showVal (Number contents) = show contents
 showVal (Bool True) = "#t"
@@ -191,6 +210,7 @@ apply func args = maybe (Bool False) ($ args) $ lookup func primitives
 
 eval :: LispVal -> LispVal
 eval val@(String _)             = val
+eval val@(Character _)          = val
 eval val@(Number _)             = val
 eval val@(Bool _)               = val
 eval (List [Atom "quote", val]) = val
