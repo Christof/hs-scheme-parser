@@ -120,8 +120,21 @@ parseChar = do
       "newline" -> '\n'
       otherwise -> (x !! 0)
 
-parseList :: Parser LispVal
-parseList = liftM List $ sepBy parseExpr spaces
+parseListElements :: Parser LispVal
+parseListElements = liftM List $ sepBy parseExpr spaces
+
+parseDottedListElements :: Parser LispVal
+parseDottedListElements = do
+  head <- endBy parseExpr spaces
+  tail <- char '.' >> spaces >> parseExpr
+  return $ DottedList head tail
+
+parseListOrDottedList :: Parser LispVal
+parseListOrDottedList = do
+  _ <- string "("
+  x <- try parseListElements <|> parseDottedListElements
+  _ <- char ')'
+  return x
 
 parseVectorElements :: Parser LispVal
 parseVectorElements = do
@@ -134,12 +147,6 @@ parseVector = do
   x <- parseVectorElements
   _ <- char ')'
   return x
-
-parseDottedList :: Parser LispVal
-parseDottedList = do
-  head <- endBy parseExpr spaces
-  tail <- char '.' >> spaces >> parseExpr
-  return $ DottedList head tail
 
 parseQuoted :: Parser LispVal
 parseQuoted = do
@@ -167,11 +174,8 @@ parseExpr =
   parseQuoted <|>
   parseQuasiQuoted <|>
   parseUnQuote <|>
-  parseVector <|> do
-    _ <- char '('
-    x <- try parseList <|> parseDottedList
-    _ <- char ')'
-    return x
+  parseVector <|>
+  parseListOrDottedList
 
 unwordsList :: [LispVal] -> String
 unwordsList = unwords . map showVal
