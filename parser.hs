@@ -173,6 +173,10 @@ isString :: [LispVal] -> LispVal
 isString [String _] = Bool True
 isString _          = Bool False
 
+isCharacter :: [LispVal] -> LispVal
+isCharacter [Character _] = Bool True
+isCharacter _             = Bool False
+
 isNumber :: [LispVal] -> LispVal
 isNumber [Number _] = Bool True
 isNumber _          = Bool False
@@ -207,6 +211,7 @@ primitives =
   , ("quotient", numericBinop quot)
   , ("remainder", numericBinop rem)
   , ("string?", isString)
+  , ("char?", isCharacter)
   , ("number?", isNumber)
   , ("symbol?", isSymbol)
   , ("boolean?", isBoolean)
