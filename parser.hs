@@ -1,4 +1,5 @@
 import           Control.Monad
+import           Data.Array
 import           Numeric
 import           System.Environment
 import           Text.ParserCombinators.Parsec hiding (spaces)
@@ -6,6 +7,7 @@ import           Text.ParserCombinators.Parsec hiding (spaces)
 data LispVal
   = Atom String
   | List [LispVal]
+  | Vector (Array Int LispVal)
   | DottedList [LispVal]
                LispVal
   | Number Integer
@@ -121,6 +123,18 @@ parseChar = do
 parseList :: Parser LispVal
 parseList = liftM List $ sepBy parseExpr spaces
 
+parseVectorElements :: Parser LispVal
+parseVectorElements = do
+  arrayValues <- sepBy parseExpr spaces
+  return $ Vector (listArray (0, (length arrayValues - 1)) arrayValues)
+
+parseVector :: Parser LispVal
+parseVector = do
+  _ <- string "#("
+  x <- parseVectorElements
+  _ <- char ')'
+  return x
+
 parseDottedList :: Parser LispVal
 parseDottedList = do
   head <- endBy parseExpr spaces
@@ -152,7 +166,8 @@ parseExpr =
   parseString <|>
   parseQuoted <|>
   parseQuasiQuoted <|>
-  parseUnQuote <|> do
+  parseUnQuote <|>
+  parseVector <|> do
     _ <- char '('
     x <- try parseList <|> parseDottedList
     _ <- char ')'
