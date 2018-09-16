@@ -191,6 +191,7 @@ showVal (Bool False) = "#f"
 showVal (List contents) = "(" ++ unwordsList contents ++ ")"
 showVal (DottedList head tail) =
   "(" ++ unwordsList head ++ " . " ++ showVal tail ++ ")"
+showVal (Vector array) = "(" ++ unwordsList (elems array) ++ ")"
 
 instance Show LispVal where
   show = showVal
@@ -267,8 +268,10 @@ eval val@(Character _)          = val
 eval val@(Number _)             = val
 eval val@(Float _)              = val
 eval val@(Bool _)               = val
+eval val@(Vector _)             = val
 eval (List [Atom "quote", val]) = val
 eval (List (Atom func:args))    = apply func $ map eval args
+eval val@(List _)               = val
 
 readExpr :: String -> LispVal
 readExpr input =
