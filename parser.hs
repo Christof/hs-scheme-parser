@@ -181,6 +181,10 @@ isNumber :: [LispVal] -> LispVal
 isNumber [Number _] = Bool True
 isNumber _          = Bool False
 
+isFloat :: [LispVal] -> LispVal
+isFloat [Float _] = Bool True
+isFloat _         = Bool False
+
 isSymbol :: [LispVal] -> LispVal
 isSymbol [Atom _] = Bool True
 isSymbol _        = Bool False
@@ -213,6 +217,7 @@ primitives =
   , ("string?", isString)
   , ("char?", isCharacter)
   , ("number?", isNumber)
+  , ("real?", isFloat)
   , ("symbol?", isSymbol)
   , ("boolean?", isBoolean)
   , ("list?", isList)
