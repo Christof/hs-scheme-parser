@@ -9,6 +9,7 @@ data LispVal
   | DottedList [LispVal]
                LispVal
   | Number Integer
+  | Float Double
   | Character Char
   | String String
   | Bool Bool
@@ -72,6 +73,13 @@ parseNumber :: Parser LispVal
 parseNumber =
   parseDecimal <|> parseExplicitDecimal <|> parseHex <|> parseOct <|> parseBin
 
+parseFloat :: Parser LispVal
+parseFloat = do
+  x <- many1 digit
+  _ <- char '.'
+  y <- many1 digit
+  (return . Float . fst . head . readFloat) (x ++ "." ++ y)
+
 escapedChars :: Parser Char
 escapedChars = do
   _ <- char '\\'
@@ -127,7 +135,8 @@ parseQuoted = do
 
 parseExpr :: Parser LispVal
 parseExpr =
-  parseAtom <|> try parseNumber <|> try parseBool <|> try parseChar <|>
+  parseAtom <|> try parseFloat <|> try parseNumber <|> try parseBool <|>
+  try parseChar <|>
   parseString <|>
   parseQuoted <|> do
     _ <- char '('
@@ -143,6 +152,7 @@ showVal (String contents) = "\"" ++ contents ++ "\""
 showVal (Character contents) = "#\\" ++ [contents]
 showVal (Atom name) = name
 showVal (Number contents) = show contents
+showVal (Float contents) = show contents
 showVal (Bool True) = "#t"
 showVal (Bool False) = "#f"
 showVal (List contents) = "(" ++ unwordsList contents ++ ")"
@@ -212,6 +222,7 @@ eval :: LispVal -> LispVal
 eval val@(String _)             = val
 eval val@(Character _)          = val
 eval val@(Number _)             = val
+eval val@(Float _)              = val
 eval val@(Bool _)               = val
 eval (List [Atom "quote", val]) = val
 eval (List (Atom func:args))    = apply func $ map eval args
