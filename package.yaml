@@ -12,9 +12,9 @@ ghc-options: -Wall -fno-warn-name-shadowing
 
 dependencies:
   - base >= 4.9 && < 5
+  - array
   - parsec
 
 executable:
   main: parser.hs
   source-dirs: .
-

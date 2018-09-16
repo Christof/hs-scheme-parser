@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c8e5bf05698d30750d2e315a1ba1e2c59e634b95b65f041036fc68b1b9c95201
+-- hash: 3989d099b5b6c9c1d855eae5459eefd6db004bfe5f14651cb0b1a34ff6dff8ea
 
 name:           hs-scheme-parser
 version:        0.0.1
@@ -30,6 +30,7 @@ executable hs-scheme-parser
       ./.
   ghc-options: -Wall -fno-warn-name-shadowing
   build-depends:
-      base >=4.9 && <5
+      array
+    , base >=4.9 && <5
     , parsec
   default-language: Haskell2010
