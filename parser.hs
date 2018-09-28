@@ -45,6 +45,8 @@ showError (Default message) = "Error: " ++ message
 instance Show LispError where
   show = showError
 
+type ThrowsError = Either LispError
+
 spaces :: Parser ()
 spaces = skipMany1 space
 
