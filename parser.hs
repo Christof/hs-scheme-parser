@@ -1,4 +1,5 @@
 import           Control.Monad
+import           Control.Monad.Except
 import           Data.Array
 import           Numeric
 import           System.Environment

@@ -14,6 +14,7 @@ dependencies:
   - base >= 4.9 && < 5
   - array
   - parsec
+  - mtl
 
 executable:
   main: parser.hs
