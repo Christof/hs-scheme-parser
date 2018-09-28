@@ -17,6 +17,20 @@ data LispVal
   | String String
   | Bool Bool
 
+data LispError
+  = NumArgs Integer
+            [LispVal]
+  | TypeMismatch String
+                 LispVal
+  | Parser ParseError
+  | BadSpecialForm String
+                   LispVal
+  | NotFunction String
+                String
+  | UnboundVar String
+               String
+  | Default String
+
 spaces :: Parser ()
 spaces = skipMany1 space
 
