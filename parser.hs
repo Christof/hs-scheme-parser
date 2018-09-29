@@ -153,9 +153,9 @@ parseChar = do
   return $
     Character $
     case x of
-      "space"   -> ' '
-      "newline" -> '\n'
-      otherwise -> (x !! 0)
+      "space"    -> ' '
+      "newline"  -> '\n'
+      _otherwise -> (x !! 0)
 
 parseListElements :: Parser LispVal
 parseListElements = liftM List $ sepBy parseExpr spaces
@@ -235,8 +235,8 @@ instance Show LispVal where
 
 numericBinop ::
      (Integer -> Integer -> Integer) -> [LispVal] -> ThrowsError LispVal
-numericBinop op [] = throwError $ NumArgs 2 []
-numericBinop op singleVal@[_] = throwError $ NumArgs 2 singleVal
+numericBinop _op [] = throwError $ NumArgs 2 []
+numericBinop _op singleVal@[_] = throwError $ NumArgs 2 singleVal
 numericBinop op params = mapM unpackNum params >>= return . Number . foldl1 op
 
 unpackNum :: LispVal -> ThrowsError Integer
