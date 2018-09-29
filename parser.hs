@@ -233,12 +233,21 @@ showVal (Vector array) = "(" ++ unwordsList (elems array) ++ ")"
 instance Show LispVal where
   show = showVal
 
-numericBinop :: (Integer -> Integer -> Integer) -> [LispVal] -> LispVal
-numericBinop op params = Number $ foldl1 op $ map unpackNum params
+numericBinop ::
+     (Integer -> Integer -> Integer) -> [LispVal] -> ThrowsError LispVal
+numericBinop op [] = throwError $ NumArgs 2 []
+numericBinop op singleVal@[_] = throwError $ NumArgs 2 singleVal
+numericBinop op params = mapM unpackNum params >>= return . Number . foldl1 op
 
-unpackNum :: LispVal -> Integer
-unpackNum (Number n) = n
-unpackNum _          = 0
+unpackNum :: LispVal -> ThrowsError Integer
+unpackNum (Number n) = return n
+unpackNum (String n) =
+  let parsed = reads n
+   in if null parsed
+        then throwError $ TypeMismatch "number" $ String n
+        else return $ fst $ parsed !! 0
+unpackNum (List [n]) = unpackNum n
+unpackNum notNum = throwError $ TypeMismatch "number" notNum
 
 isString :: [LispVal] -> LispVal
 isString [String _] = Bool True
@@ -276,7 +285,7 @@ stringToSymbol :: [LispVal] -> LispVal
 stringToSymbol [String s] = Atom s
 stringToSymbol _          = Atom ""
 
-primitives :: [(String, [LispVal] -> LispVal)]
+primitives :: [(String, [LispVal] -> ThrowsError LispVal)]
 primitives =
   [ ("+", numericBinop (+))
   , ("-", numericBinop (-))
@@ -285,15 +294,15 @@ primitives =
   , ("mod", numericBinop mod)
   , ("quotient", numericBinop quot)
   , ("remainder", numericBinop rem)
-  , ("string?", isString)
-  , ("char?", isCharacter)
-  , ("number?", isNumber)
-  , ("real?", isFloat)
-  , ("symbol?", isSymbol)
-  , ("boolean?", isBoolean)
-  , ("list?", isList)
-  , ("symbol->string", symbolToString)
-  , ("string->symbol", stringToSymbol)
+  , ("string?", return . isString)
+  , ("char?", return . isCharacter)
+  , ("number?", return . isNumber)
+  , ("real?", return . isFloat)
+  , ("symbol?", return . isSymbol)
+  , ("boolean?", return . isBoolean)
+  , ("list?", return . isList)
+  , ("symbol->string", return . symbolToString)
+  , ("string->symbol", return . stringToSymbol)
   ]
 
 apply :: String -> [LispVal] -> ThrowsError LispVal
@@ -322,4 +331,7 @@ readExpr input =
     Right val -> return val
 
 main :: IO ()
-main = getArgs >>= print . eval . readExpr . head
+main = do
+  args <- getArgs
+  evaluated <- return $ liftM show $ readExpr (args !! 0) >>= eval
+  putStrLn $ extractValue $ trapError evaluated
