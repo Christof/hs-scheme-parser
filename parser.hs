@@ -308,6 +308,13 @@ unpackBool notBool  = throwError $ TypeMismatch "boolean" notBool
 numBoolBinop :: (Integer -> Integer -> Bool) -> [LispVal] -> ThrowsError LispVal
 numBoolBinop = boolBinop unpackNum
 
+unpackString :: LispVal -> ThrowsError String
+unpackString (String s) = return s
+unpackString notString  = throwError $ TypeMismatch "string" notString
+
+strBoolBinop :: (String -> String -> Bool) -> [LispVal] -> ThrowsError LispVal
+strBoolBinop = boolBinop unpackString
+
 primitives :: [(String, [LispVal] -> ThrowsError LispVal)]
 primitives =
   [ ("+", numericBinop (+))
@@ -334,6 +341,11 @@ primitives =
   , ("<=", numBoolBinop (<=))
   , ("&&", boolBoolBinop (&&))
   , ("||", boolBoolBinop (||))
+  , ("string=?", strBoolBinop (==))
+  , ("string<?", strBoolBinop (<))
+  , ("string>?", strBoolBinop (>))
+  , ("string<=?", strBoolBinop (<=))
+  , ("string>=?", strBoolBinop (>=))
   ]
 
 apply :: String -> [LispVal] -> ThrowsError LispVal
