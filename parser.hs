@@ -285,6 +285,22 @@ stringToSymbol :: [LispVal] -> LispVal
 stringToSymbol [String s] = Atom s
 stringToSymbol _          = Atom ""
 
+boolBinop ::
+     (LispVal -> ThrowsError a)
+  -> (a -> a -> Bool)
+  -> [LispVal]
+  -> ThrowsError LispVal
+boolBinop unpacker op args =
+  if length args /= 2
+    then throwError $ NumArgs 2 args
+    else do
+      left <- unpacker $ args !! 0
+      right <- unpacker $ args !! 1
+      return $ Bool $ left `op` right
+
+numBoolBinop :: (Integer -> Integer -> Bool) -> [LispVal] -> ThrowsError LispVal
+numBoolBinop = boolBinop unpackNum
+
 primitives :: [(String, [LispVal] -> ThrowsError LispVal)]
 primitives =
   [ ("+", numericBinop (+))
@@ -303,6 +319,12 @@ primitives =
   , ("list?", return . isList)
   , ("symbol->string", return . symbolToString)
   , ("string->symbol", return . stringToSymbol)
+  , ("=", numBoolBinop (==))
+  , ("<", numBoolBinop (<))
+  , (">", numBoolBinop (>))
+  , ("/=", numBoolBinop (/=))
+  , (">=", numBoolBinop (>=))
+  , ("<=", numBoolBinop (<=))
   ]
 
 apply :: String -> [LispVal] -> ThrowsError LispVal
