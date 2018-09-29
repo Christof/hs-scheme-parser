@@ -298,6 +298,13 @@ boolBinop unpacker op args =
       right <- unpacker $ args !! 1
       return $ Bool $ left `op` right
 
+boolBoolBinop :: (Bool -> Bool -> Bool) -> [LispVal] -> ThrowsError LispVal
+boolBoolBinop = boolBinop unpackBool
+
+unpackBool :: LispVal -> ThrowsError Bool
+unpackBool (Bool b) = return b
+unpackBool notBool  = throwError $ TypeMismatch "boolean" notBool
+
 numBoolBinop :: (Integer -> Integer -> Bool) -> [LispVal] -> ThrowsError LispVal
 numBoolBinop = boolBinop unpackNum
 
@@ -325,6 +332,8 @@ primitives =
   , ("/=", numBoolBinop (/=))
   , (">=", numBoolBinop (>=))
   , ("<=", numBoolBinop (<=))
+  , ("&&", boolBoolBinop (&&))
+  , ("||", boolBoolBinop (||))
   ]
 
 apply :: String -> [LispVal] -> ThrowsError LispVal
