@@ -296,25 +296,30 @@ primitives =
   , ("string->symbol", stringToSymbol)
   ]
 
-apply :: String -> [LispVal] -> LispVal
-apply func args = maybe (Bool False) ($ args) $ lookup func primitives
+apply :: String -> [LispVal] -> ThrowsError LispVal
+apply func args =
+  maybe
+    (throwError $ NotFunction "Unrecognized primitive function args" func)
+    ($ args)
+    (lookup func primitives)
 
-eval :: LispVal -> LispVal
-eval val@(String _)             = val
-eval val@(Character _)          = val
-eval val@(Number _)             = val
-eval val@(Float _)              = val
-eval val@(Bool _)               = val
-eval val@(Vector _)             = val
-eval (List [Atom "quote", val]) = val
-eval (List (Atom func:args))    = apply func $ map eval args
-eval val@(List _)               = val
+eval :: LispVal -> ThrowsError LispVal
+eval val@(String _) = return val
+eval val@(Character _) = return val
+eval val@(Number _) = return val
+eval val@(Float _) = return val
+eval val@(Bool _) = return val
+eval val@(Vector _) = return val
+eval (List [Atom "quote", val]) = return val
+eval (List (Atom func:args)) = mapM eval args >>= apply func
+eval val@(List _) = return val
+eval badForm = throwError $ BadSpecialForm "Unrecognized special form" badForm
 
-readExpr :: String -> LispVal
+readExpr :: String -> ThrowsError LispVal
 readExpr input =
   case parse parseExpr "lisp" input of
-    Left err  -> String $ "No match: " ++ show err
-    Right val -> val
+    Left err  -> throwError $ Parser err
+    Right val -> return val
 
 main :: IO ()
 main = getArgs >>= print . eval . readExpr . head
