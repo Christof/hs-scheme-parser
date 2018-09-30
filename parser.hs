@@ -365,6 +365,21 @@ unpackEquals arg1 arg2 (AnyUnpacker unpacker) =
      return $ unpacked1 == unpacked2
      `catchError` (const $ return False)
 
+equal :: [LispVal] -> ThrowsError LispVal
+equal [arg1, arg2] = do
+  primitveEquals <-
+    liftM or $
+    mapM
+      (unpackEquals arg1 arg2)
+      [AnyUnpacker unpackNum, AnyUnpacker unpackString, AnyUnpacker unpackBool]
+  eqvEquals <- eqv [arg1, arg2]
+  return $
+    Bool $
+    (primitveEquals ||
+     let (Bool x) = eqvEquals
+      in x)
+equal badArgList = throwError $ NumArgs 2 badArgList
+
 primitives :: [(String, [LispVal] -> ThrowsError LispVal)]
 primitives =
   [ ("+", numericBinop (+))
@@ -401,6 +416,7 @@ primitives =
   , ("cons", cons)
   , ("eq?", eqv)
   , ("eqv?", eqv)
+  , ("equal?", equal)
   ]
 
 apply :: String -> [LispVal] -> ThrowsError LispVal
