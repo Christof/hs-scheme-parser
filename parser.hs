@@ -1,3 +1,5 @@
+{-# LANGUAGE ExistentialQuantification #-}
+
 import           Control.Monad
 import           Control.Monad.Except
 import           Data.Array
@@ -351,6 +353,17 @@ eqv [(List arg1), (List arg2)] =
         Right (Bool val) -> val
 eqv [_, _] = return $ Bool False
 eqv badArgList = throwError $ NumArgs 2 badArgList
+
+data Unpacker =
+  forall a. Eq a =>
+            AnyUnpacker (LispVal -> ThrowsError a)
+
+unpackEquals :: LispVal -> LispVal -> Unpacker -> ThrowsError Bool
+unpackEquals arg1 arg2 (AnyUnpacker unpacker) =
+  do unpacked1 <- unpacker arg1
+     unpacked2 <- unpacker arg2
+     return $ unpacked1 == unpacked2
+     `catchError` (const $ return False)
 
 primitives :: [(String, [LispVal] -> ThrowsError LispVal)]
 primitives =
