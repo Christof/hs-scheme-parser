@@ -370,6 +370,9 @@ unpackEquals arg1 arg2 (AnyUnpacker unpacker) =
      `catchError` (const $ return False)
 
 equal :: [LispVal] -> ThrowsError LispVal
+equal [list1@(List _arg1), list2@(List _arg2)] = eqvList equal [list1, list2]
+equal [(DottedList xs x), (DottedList ys y)] =
+  equal [List $ xs ++ [x], List $ ys ++ [y]]
 equal [arg1, arg2] = do
   primitveEquals <-
     liftM or $
