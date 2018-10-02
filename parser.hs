@@ -436,8 +436,10 @@ eval val@(Vector _) = return val
 eval (List [Atom "if", pred, conseq, alt]) = do
   result <- eval pred
   case result of
+    Bool True -> eval conseq
     Bool False -> eval alt
-    _otherwise -> eval conseq
+    _otherwise ->
+      throwError $ BadSpecialForm "If predicate must return a bool" pred
 eval (List [Atom "quote", val]) = return val
 eval (List (Atom func:args)) = mapM eval args >>= apply func
 eval val@(List _) = return val
