@@ -387,6 +387,12 @@ equal [arg1, arg2] = do
       in x)
 equal badArgList = throwError $ NumArgs 2 badArgList
 
+instance Eq LispVal where
+  x == y =
+    case equal [x, y] of
+      Right (Bool True) -> True
+      _                 -> False
+
 primitives :: [(String, [LispVal] -> ThrowsError LispVal)]
 primitives =
   [ ("+", numericBinop (+))
@@ -461,6 +467,18 @@ eval (List [Atom "if", pred, conseq, alt]) = do
       throwError $ BadSpecialForm "If predicate must return a bool" pred
 eval (List ((Atom "cond"):alts)) = cond alts
 eval (List [Atom "quote", val]) = return val
+eval form@(List (Atom "case":key:clauses)) =
+  if null clauses
+    then throwError $ BadSpecialForm "no true clause in case expression: " form
+    else case head clauses of
+           List (Atom "else":exprs) -> mapM eval exprs >>= return . last
+           List ((List datums):exprs) -> do
+             result <- eval key
+             equality <- mapM (\x -> eqv [result, x]) datums
+             if Bool True `elem` equality
+               then mapM eval exprs >>= return . last
+               else eval $ List (Atom "case" : key : tail clauses)
+           _ -> throwError $ BadSpecialForm "ill-formed case expression: " form
 eval (List (Atom func:args)) = mapM eval args >>= apply func
 eval val@(List _) = return val
 eval badForm = throwError $ BadSpecialForm "Unrecognized special form" badForm
