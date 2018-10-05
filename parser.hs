@@ -68,6 +68,9 @@ liftThrows :: ThrowsError a -> IOThrowsError a
 liftThrows (Left error)  = throwError error
 liftThrows (Right value) = return value
 
+runIOThrows :: IOThrowsError String -> IO String
+runIOThrows action = runExceptT (trapError action) >>= return . extractValue
+
 spaces :: Parser ()
 spaces = skipMany1 space
 
