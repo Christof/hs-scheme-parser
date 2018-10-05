@@ -62,6 +62,12 @@ type Env = IORef [(String, IORef LispVal)]
 nullEnv :: IO Env
 nullEnv = newIORef []
 
+type IOThrowsError = ExceptT LispError IO
+
+liftThrows :: ThrowsError a -> IOThrowsError a
+liftThrows (Left error)  = throwError error
+liftThrows (Right value) = return value
+
 spaces :: Parser ()
 spaces = skipMany1 space
 
