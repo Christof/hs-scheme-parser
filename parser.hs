@@ -5,6 +5,7 @@ import           Control.Monad.Except
 import           Data.Array
 import           Numeric
 import           System.Environment
+import           System.IO
 import           Text.ParserCombinators.Parsec hiding (spaces)
 
 data LispVal
@@ -509,6 +510,12 @@ readExpr input =
   case parse parseExpr "lisp" input of
     Left err  -> throwError $ Parser err
     Right val -> return val
+
+flushStr :: String -> IO ()
+flushStr str = putStr str >> hFlush stdout
+
+readPrompt :: String -> IO String
+readPrompt prompt = flushStr prompt >> getLine
 
 main :: IO ()
 main = do
