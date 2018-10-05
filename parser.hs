@@ -317,6 +317,11 @@ unpackString notString  = throwError $ TypeMismatch "string" notString
 strBoolBinop :: (String -> String -> Bool) -> [LispVal] -> ThrowsError LispVal
 strBoolBinop = boolBinop unpackString
 
+strLength :: [LispVal] -> ThrowsError LispVal
+strLength [String s]  = Right $ Number $ fromIntegral $ length s
+strLength [notString] = throwError $ TypeMismatch "string" notString
+strLength badArgList  = throwError $ NumArgs 1 badArgList
+
 car :: [LispVal] -> ThrowsError LispVal
 car [List (x:_xs)]         = return x
 car [DottedList (x:_xs) _] = return x
@@ -424,6 +429,7 @@ primitives =
   , ("string>?", strBoolBinop (>))
   , ("string<=?", strBoolBinop (<=))
   , ("string>=?", strBoolBinop (>=))
+  , ("string-length", strLength)
   , ("car", car)
   , ("cdr", cdr)
   , ("cons", cons)
