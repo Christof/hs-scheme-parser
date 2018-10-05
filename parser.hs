@@ -323,10 +323,14 @@ strLength [notString] = throwError $ TypeMismatch "string" notString
 strLength badArgList  = throwError $ NumArgs 1 badArgList
 
 strRef :: [LispVal] -> ThrowsError LispVal
-strRef [String s, Number i]  = Right $ Character $ s !! (fromIntegral i)
+strRef [String s, Number i]
+  | length s < i' + 1 = throwError $ Default "Out of bound error"
+  | otherwise = Right $ Character $ s !! i'
+  where
+    i' = fromIntegral i
 strRef [notString, Number _] = throwError $ TypeMismatch "string" notString
 strRef [String _, notNumber] = throwError $ TypeMismatch "number" notNumber
-strRef badArgList            = throwError $ NumArgs 2 badArgList
+strRef badArgList = throwError $ NumArgs 2 badArgList
 
 car :: [LispVal] -> ThrowsError LispVal
 car [List (x:_xs)]         = return x
