@@ -531,8 +531,13 @@ loopUntil pred prompt action = do
     then return ()
     else action result >> loopUntil pred prompt action
 
+runRepl :: IO ()
+runRepl = loopUntil (== "quit") (readPrompt "Lisp>>> ") evalAndPrint
+
 main :: IO ()
 main = do
   args <- getArgs
-  evaluated <- return $ liftM show $ readExpr (args !! 0) >>= eval
-  putStrLn $ extractValue $ trapError evaluated
+  case length args of
+    0          -> runRepl
+    1          -> evalAndPrint $ args !! 0
+    _otherwise -> putStrLn "Program takes only 0 or 1 argument"
