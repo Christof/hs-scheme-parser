@@ -322,6 +322,12 @@ strLength [String s]  = Right $ Number $ fromIntegral $ length s
 strLength [notString] = throwError $ TypeMismatch "string" notString
 strLength badArgList  = throwError $ NumArgs 1 badArgList
 
+strRef :: [LispVal] -> ThrowsError LispVal
+strRef [String s, Number i]  = Right $ Character $ s !! (fromIntegral i)
+strRef [notString, Number _] = throwError $ TypeMismatch "string" notString
+strRef [String _, notNumber] = throwError $ TypeMismatch "number" notNumber
+strRef badArgList            = throwError $ NumArgs 2 badArgList
+
 car :: [LispVal] -> ThrowsError LispVal
 car [List (x:_xs)]         = return x
 car [DottedList (x:_xs) _] = return x
@@ -430,6 +436,7 @@ primitives =
   , ("string<=?", strBoolBinop (<=))
   , ("string>=?", strBoolBinop (>=))
   , ("string-length", strLength)
+  , ("string-ref", strRef)
   , ("car", car)
   , ("cdr", cdr)
   , ("cons", cons)
