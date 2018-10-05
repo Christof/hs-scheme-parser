@@ -451,6 +451,18 @@ cond ((List a):_) = throwError $ NumArgs 2 a
 cond (a:_) = throwError $ NumArgs 2 [a]
 cond _ = throwError $ Default "Not viable alternative in cond"
 
+caseExpression :: LispVal -> [LispVal] -> LispVal -> ThrowsError LispVal
+caseExpression key clauses form =
+  case head clauses of
+    List (Atom "else":exprs) -> mapM eval exprs >>= return . last
+    List ((List datums):exprs) -> do
+      result <- eval key
+      equality <- mapM (\x -> eqv [result, x]) datums
+      if Bool True `elem` equality
+        then mapM eval exprs >>= return . last
+        else eval $ List (Atom "case" : key : tail clauses)
+    _ -> throwError $ BadSpecialForm "ill-formed case expression: " form
+
 eval :: LispVal -> ThrowsError LispVal
 eval val@(String _) = return val
 eval val@(Character _) = return val
@@ -470,15 +482,7 @@ eval (List [Atom "quote", val]) = return val
 eval form@(List (Atom "case":key:clauses)) =
   if null clauses
     then throwError $ BadSpecialForm "no true clause in case expression: " form
-    else case head clauses of
-           List (Atom "else":exprs) -> mapM eval exprs >>= return . last
-           List ((List datums):exprs) -> do
-             result <- eval key
-             equality <- mapM (\x -> eqv [result, x]) datums
-             if Bool True `elem` equality
-               then mapM eval exprs >>= return . last
-               else eval $ List (Atom "case" : key : tail clauses)
-           _ -> throwError $ BadSpecialForm "ill-formed case expression: " form
+    else caseExpression key clauses form
 eval (List (Atom func:args)) = mapM eval args >>= apply func
 eval val@(List _) = return val
 eval badForm = throwError $ BadSpecialForm "Unrecognized special form" badForm
