@@ -3,6 +3,7 @@
 import           Control.Monad
 import           Control.Monad.Except
 import           Data.Array
+import           Data.IORef
 import           Numeric
 import           System.Environment
 import           System.IO
@@ -55,6 +56,11 @@ trapError action = catchError action (return . show)
 
 extractValue :: ThrowsError a -> a
 extractValue (Right val) = val
+
+type Env = IORef [(String, IORef LispVal)]
+
+nullEnv :: IO Env
+nullEnv = newIORef []
 
 spaces :: Parser ()
 spaces = skipMany1 space
