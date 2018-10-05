@@ -524,6 +524,13 @@ evalString expr =
 evalAndPrint :: String -> IO ()
 evalAndPrint expr = evalString expr >>= putStrLn
 
+loopUntil :: Monad m => (a -> Bool) -> m a -> (a -> m ()) -> m ()
+loopUntil pred prompt action = do
+  result <- prompt
+  if pred result
+    then return ()
+    else action result >> loopUntil pred prompt action
+
 main :: IO ()
 main = do
   args <- getArgs
