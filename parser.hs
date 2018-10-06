@@ -544,6 +544,9 @@ eval _env val@(Number _) = return val
 eval _env val@(Float _) = return val
 eval _env val@(Bool _) = return val
 eval _env val@(Vector _) = return val
+eval env (List [Atom "define", Atom var, form]) =
+  eval env form >>= defineVar env var
+eval env (Atom id) = getVar env id
 eval env (List [Atom "if", pred, conseq, alt]) = do
   result <- eval env pred
   case result of
