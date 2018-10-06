@@ -71,6 +71,10 @@ liftThrows (Right value) = return value
 runIOThrows :: IOThrowsError String -> IO String
 runIOThrows action = runExceptT (trapError action) >>= return . extractValue
 
+isBound :: Env -> String -> IO Bool
+isBound envRef var =
+  readIORef envRef >>= return . maybe False (const True) . lookup var
+
 spaces :: Parser ()
 spaces = skipMany1 space
 
