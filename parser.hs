@@ -103,6 +103,14 @@ defineVar envRef var value = do
            writeIORef envRef ((var, valueRef) : env)
            return value
 
+bindVars :: Env -> [(String, LispVal)] -> IO Env
+bindVars envRef bindings = readIORef envRef >>= extendEnv bindings >>= newIORef
+  where
+    extendEnv bindings env = liftM (++ env) (mapM addBinding bindings)
+    addBinding (var, value) = do
+      ref <- newIORef value
+      return (var, ref)
+
 spaces :: Parser ()
 spaces = skipMany1 space
 
