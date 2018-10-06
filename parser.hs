@@ -83,6 +83,15 @@ getVar envRef var = do
     (liftIO . readIORef)
     (lookup var env)
 
+setVar :: Env -> String -> LispVal -> IOThrowsError LispVal
+setVar envRef var value = do
+  env <- liftIO $ readIORef envRef
+  maybe
+    (throwError $ UnboundVar "Setting an unbound variable" var)
+    (liftIO . (flip writeIORef value))
+    (lookup var env)
+  return value
+
 spaces :: Parser ()
 spaces = skipMany1 space
 
