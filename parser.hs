@@ -520,9 +520,9 @@ cond env ((List (condition:value:[])):alts) = do
   if boolResult
     then eval env value
     else cond env alts
-cond env ((List a):_) = throwError $ NumArgs 2 a
-cond env (a:_) = throwError $ NumArgs 2 [a]
-cond env _ = throwError $ Default "Not viable alternative in cond"
+cond _env ((List a):_) = throwError $ NumArgs 2 a
+cond _env (a:_) = throwError $ NumArgs 2 [a]
+cond _env _ = throwError $ Default "Not viable alternative in cond"
 
 caseExpression ::
      Env -> LispVal -> [LispVal] -> LispVal -> IOThrowsError LispVal
@@ -538,12 +538,12 @@ caseExpression env key clauses form =
     _ -> throwError $ BadSpecialForm "ill-formed case expression: " form
 
 eval :: Env -> LispVal -> IOThrowsError LispVal
-eval env val@(String _) = return val
-eval env val@(Character _) = return val
-eval env val@(Number _) = return val
-eval env val@(Float _) = return val
-eval env val@(Bool _) = return val
-eval env val@(Vector _) = return val
+eval _env val@(String _) = return val
+eval _env val@(Character _) = return val
+eval _env val@(Number _) = return val
+eval _env val@(Float _) = return val
+eval _env val@(Bool _) = return val
+eval _env val@(Vector _) = return val
 eval env (List [Atom "if", pred, conseq, alt]) = do
   result <- eval env pred
   case result of
@@ -552,15 +552,15 @@ eval env (List [Atom "if", pred, conseq, alt]) = do
     _otherwise ->
       throwError $ BadSpecialForm "If predicate must return a bool" pred
 eval env (List ((Atom "cond"):alts)) = cond env alts
-eval env (List [Atom "quote", val]) = return val
+eval _env (List [Atom "quote", val]) = return val
 eval env form@(List (Atom "case":key:clauses)) =
   if null clauses
     then throwError $ BadSpecialForm "no true clause in case expression: " form
     else caseExpression env key clauses form
 eval env (List (Atom func:args)) =
   mapM (eval env) args >>= liftThrows . apply func
-eval env val@(List _) = return val
-eval env badForm =
+eval _env val@(List _) = return val
+eval _env badForm =
   throwError $ BadSpecialForm "Unrecognized special form" badForm
 
 readExpr :: String -> ThrowsError LispVal
