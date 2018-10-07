@@ -589,6 +589,12 @@ eval env (List (Atom "define":List (Atom var:params):body)) =
   makeNormalFunc env params body >>= defineVar env var
 eval env (List (Atom "define":DottedList (Atom var:params) varargs:body)) =
   makeVarArgs varargs env params body >>= defineVar env var
+eval env (List (Atom "lambda":List params:body)) =
+  makeNormalFunc env params body
+eval env (List (Atom "lambda":DottedList params varargs:body)) =
+  makeVarArgs varargs env params body
+eval env (List (Atom "lambda":varargs@(Atom _):body)) =
+  makeVarArgs varargs env [] body
 eval env (List [Atom "set!", Atom var, form]) = eval env form >>= setVar env var
 eval env (Atom id) = getVar env id
 eval env (List [Atom "if", pred, conseq, alt]) = do
