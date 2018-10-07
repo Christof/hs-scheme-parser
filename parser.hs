@@ -518,12 +518,14 @@ primitives =
   , ("equal?", equal)
   ]
 
-apply :: String -> [LispVal] -> ThrowsError LispVal
-apply func args =
-  maybe
-    (throwError $ NotFunction "Unrecognized primitive function args" func)
-    ($ args)
-    (lookup func primitives)
+primitiveBindings :: IO Env
+primitiveBindings =
+  nullEnv >>= (flip bindVars $ map makePrimitiveFunc primitives)
+  where
+    makePrimitiveFunc (var, func) = (var, PrimitiveFunc func)
+
+apply :: LispVal -> [LispVal] -> IOThrowsError LispVal
+apply (PrimitiveFunc func) args = liftThrows $ func args
 
 cond :: Env -> [LispVal] -> IOThrowsError LispVal
 cond env ((List (Atom "else":value:[])):[]) = eval env value
@@ -574,8 +576,10 @@ eval env form@(List (Atom "case":key:clauses)) =
   if null clauses
     then throwError $ BadSpecialForm "no true clause in case expression: " form
     else caseExpression env key clauses form
-eval env (List (Atom func:args)) =
-  mapM (eval env) args >>= liftThrows . apply func
+eval env (List (function:args)) = do
+  func <- eval env function
+  argVals <- mapM (eval env) args
+  apply func argVals
 eval _env val@(List _) = return val
 eval _env badForm =
   throwError $ BadSpecialForm "Unrecognized special form" badForm
@@ -608,10 +612,11 @@ loopUntil pred prompt action = do
 
 runRepl :: IO ()
 runRepl =
-  nullEnv >>= loopUntil (== "quit") (readPrompt "Lisp>>> ") . evalAndPrint
+  primitiveBindings >>=
+  loopUntil (== "quit") (readPrompt "Lisp>>> ") . evalAndPrint
 
 runOne :: String -> IO ()
-runOne expr = nullEnv >>= flip evalAndPrint expr
+runOne expr = primitiveBindings >>= flip evalAndPrint expr
 
 main :: IO ()
 main = do
