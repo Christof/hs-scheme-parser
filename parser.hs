@@ -565,6 +565,14 @@ caseExpression env key clauses form =
         else eval env $ List (Atom "case" : key : tail clauses)
     _ -> throwError $ BadSpecialForm "ill-formed case expression: " form
 
+makeFunc ::
+     Monad m => Maybe String -> Env -> [LispVal] -> [LispVal] -> m LispVal
+makeFunc varargs env params body =
+  return $ Func (map showVal params) varargs body env
+
+makeNormalFunc :: Env -> [LispVal] -> [LispVal] -> IOThrowsError LispVal
+makeNormalFunc = makeFunc Nothing
+
 eval :: Env -> LispVal -> IOThrowsError LispVal
 eval _env val@(String _) = return val
 eval _env val@(Character _) = return val
@@ -574,6 +582,8 @@ eval _env val@(Bool _) = return val
 eval _env val@(Vector _) = return val
 eval env (List [Atom "define", Atom var, form]) =
   eval env form >>= defineVar env var
+eval env (List (Atom "define":List (Atom var:params):body)) =
+  makeNormalFunc env params body >>= defineVar env var
 eval env (List [Atom "set!", Atom var, form]) = eval env form >>= setVar env var
 eval env (Atom id) = getVar env id
 eval env (List [Atom "if", pred, conseq, alt]) = do
