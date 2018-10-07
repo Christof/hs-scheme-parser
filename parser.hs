@@ -292,6 +292,14 @@ showVal (List contents) = "(" ++ unwordsList contents ++ ")"
 showVal (DottedList head tail) =
   "(" ++ unwordsList head ++ " . " ++ showVal tail ++ ")"
 showVal (Vector array) = "(" ++ unwordsList (elems array) ++ ")"
+showVal (PrimitiveFunc _) = "<primitive>"
+showVal (Func {params = args, vararg = varargs, body = body, closure = _env}) =
+  "(lambda (" ++
+  unwords (map show args) ++
+  (case varargs of
+     Nothing  -> ""
+     Just arg -> " . " ++ arg) ++
+  ") ...)"
 
 instance Show LispVal where
   show = showVal
