@@ -573,6 +573,9 @@ makeFunc varargs env params body =
 makeNormalFunc :: Env -> [LispVal] -> [LispVal] -> IOThrowsError LispVal
 makeNormalFunc = makeFunc Nothing
 
+makeVarArgs :: LispVal -> Env -> [LispVal] -> [LispVal] -> IOThrowsError LispVal
+makeVarArgs = makeFunc . Just . showVal
+
 eval :: Env -> LispVal -> IOThrowsError LispVal
 eval _env val@(String _) = return val
 eval _env val@(Character _) = return val
@@ -584,6 +587,8 @@ eval env (List [Atom "define", Atom var, form]) =
   eval env form >>= defineVar env var
 eval env (List (Atom "define":List (Atom var:params):body)) =
   makeNormalFunc env params body >>= defineVar env var
+eval env (List (Atom "define":DottedList (Atom var:params) varargs:body)) =
+  makeVarArgs varargs env params body >>= defineVar env var
 eval env (List [Atom "set!", Atom var, form]) = eval env form >>= setVar env var
 eval env (Atom id) = getVar env id
 eval env (List [Atom "if", pred, conseq, alt]) = do
