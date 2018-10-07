@@ -526,6 +526,19 @@ primitiveBindings =
 
 apply :: LispVal -> [LispVal] -> IOThrowsError LispVal
 apply (PrimitiveFunc func) args = liftThrows $ func args
+apply (Func params varargs body closure) args =
+  if num params /= num args && varargs == Nothing
+    then throwError $ NumArgs (num params) args
+    else (liftIO $ bindVars closure $ zip params args) >>= bindVarArgs varargs >>=
+         evalBody
+  where
+    num = toInteger . length
+    bindVarArgs arg env =
+      case arg of
+        Just argName -> liftIO $ bindVars env [(argName, List $ reaminingArgs)]
+        Nothing -> return env
+    evalBody env = liftM last $ mapM (eval env) body
+    reaminingArgs = drop (length params) args
 
 cond :: Env -> [LispVal] -> IOThrowsError LispVal
 cond env ((List (Atom "else":value:[])):[]) = eval env value
