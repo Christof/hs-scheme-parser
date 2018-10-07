@@ -20,6 +20,11 @@ data LispVal
   | Character Char
   | String String
   | Bool Bool
+  | PrimitiveFunc ([LispVal] -> ThrowsError LispVal)
+  | Func { params  :: [String]
+         , vararg  :: (Maybe String)
+         , body    :: [LispVal]
+         , closure :: Env }
 
 data LispError
   = NumArgs Integer
