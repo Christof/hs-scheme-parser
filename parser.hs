@@ -530,6 +530,7 @@ primitiveBindings =
 
 apply :: LispVal -> [LispVal] -> IOThrowsError LispVal
 apply (PrimitiveFunc func) args = liftThrows $ func args
+apply (IOFunc func) args = func args
 apply (Func params varargs body closure) args =
   if num params /= num args && varargs == Nothing
     then throwError $ NumArgs (num params) args
