@@ -522,11 +522,26 @@ primitives =
   , ("equal?", equal)
   ]
 
+ioPrimitives :: [(String, [LispVal] -> IOThrowsError LispVal)]
+ioPrimitives =
+  [ ("apply", applyProc)
+  , ("open-input-file", makePort ReadMode)
+  , ("open-output-file", makePort WriteMode)
+  , ("close-input-port", closePort)
+  , ("close-output-port", closePort)
+  , ("read", readProc)
+  , ("write", writeProc)
+  , ("read-contents", readContents)
+  , ("read-all", readAll)
+  ]
+
 primitiveBindings :: IO Env
 primitiveBindings =
-  nullEnv >>= (flip bindVars $ map makePrimitiveFunc primitives)
+  nullEnv >>=
+  (flip bindVars $
+   map (makeFunc IOFunc) ioPrimitives ++ map (makeFunc PrimitiveFunc) primitives)
   where
-    makePrimitiveFunc (var, func) = (var, PrimitiveFunc func)
+    makeFunc constructor (var, func) = (var, constructor func)
 
 apply :: LispVal -> [LispVal] -> IOThrowsError LispVal
 apply (PrimitiveFunc func) args = liftThrows $ func args
