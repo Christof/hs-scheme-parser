@@ -623,11 +623,17 @@ eval _env val@(List _) = return val
 eval _env badForm =
   throwError $ BadSpecialForm "Unrecognized special form" badForm
 
+readOrThrow :: Parser a -> String -> ThrowsError a
+readOrThrow parser input =
+  case parse parser "lisp" input of
+    Left error  -> throwError $ Parser error
+    Right value -> return value
+
 readExpr :: String -> ThrowsError LispVal
-readExpr input =
-  case parse parseExpr "lisp" input of
-    Left err  -> throwError $ Parser err
-    Right val -> return val
+readExpr = readOrThrow parseExpr
+
+readExprList :: String -> ThrowsError [LispVal]
+readExprList = readOrThrow (endBy parseExpr spaces)
 
 flushStr :: String -> IO ()
 flushStr str = putStr str >> hFlush stdout
