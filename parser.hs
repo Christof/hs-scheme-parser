@@ -302,6 +302,8 @@ showVal (Func {params = args, vararg = varargs, body = body, closure = _env}) =
      Nothing  -> ""
      Just arg -> " . " ++ arg) ++
   ") ...)"
+showVal (IOFunc _) = "<IO primitive>"
+showVal (Port _) = "<IO port>"
 
 instance Show LispVal where
   show = showVal
