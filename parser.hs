@@ -522,6 +522,13 @@ primitives =
   , ("equal?", equal)
   ]
 
+makePort :: IOMode -> [LispVal] -> IOThrowsError LispVal
+makePort mode [String filename] = liftM Port $ liftIO $ openFile filename mode
+
+closePort :: [LispVal] -> IOThrowsError LispVal
+closePort [Port port] = liftIO $ hClose port >> (return $ Bool True)
+closePort _ = return $ Bool False
+
 ioPrimitives :: [(String, [LispVal] -> IOThrowsError LispVal)]
 ioPrimitives =
   [ ("apply", applyProc)
@@ -559,6 +566,11 @@ apply (Func params varargs body closure) args =
         Nothing -> return env
     evalBody env = liftM last $ mapM (eval env) body
     reaminingArgs = drop (length params) args
+
+applyProc :: [LispVal] -> IOThrowsError LispVal
+applyProc [func, List args] = apply func args
+appyProc (func : args) = apply func args
+
 
 cond :: Env -> [LispVal] -> IOThrowsError LispVal
 cond env ((List (Atom "else":value:[])):[]) = eval env value
