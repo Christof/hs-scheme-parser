@@ -25,6 +25,8 @@ data LispVal
          , vararg  :: (Maybe String)
          , body    :: [LispVal]
          , closure :: Env }
+  | IOFunc ([LispVal] -> IOThrowsError LispVal)
+  | Port Handle
 
 data LispError
   = NumArgs Integer
