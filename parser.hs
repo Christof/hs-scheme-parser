@@ -645,6 +645,7 @@ eval env (List (Atom "lambda":DottedList params varargs:body)) =
 eval env (List (Atom "lambda":varargs@(Atom _):body)) =
   makeVarArgs varargs env [] body
 eval env (List [Atom "set!", Atom var, form]) = eval env form >>= setVar env var
+eval env (List [Atom "load", String filename]) = load filename >>= liftM last . mapM (eval env)
 eval env (Atom id) = getVar env id
 eval env (List [Atom "if", pred, conseq, alt]) = do
   result <- eval env pred
