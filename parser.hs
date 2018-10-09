@@ -586,7 +586,7 @@ apply (Func params varargs body closure) args =
 
 applyProc :: [LispVal] -> IOThrowsError LispVal
 applyProc [func, List args] = apply func args
-appyProc (func : args) = apply func args
+applyProc (func : args) = apply func args
 
 
 cond :: Env -> [LispVal] -> IOThrowsError LispVal
