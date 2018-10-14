@@ -24,3 +24,6 @@
   (if (null? lst)
     accum
     (foldl func (func accum (car last)) (cdr lst))))
+
+(define fold foldl)
+(define reduce foldr)
