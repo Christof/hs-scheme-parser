@@ -47,3 +47,12 @@
   (fold (lambda (x y) (+ x 1)) 0 lst))
 (define (reverse lst)
   (fold (flip cons) '() lst))
+
+(define (mem-helper pred op) (lambda (acc next) (if (and (not acc) (pred (op next))) next acc)))
+(define (memq obj lst) (fold (mem-helper (curry eq? obj) id) #f lst))
+(define (memv obj lst) (fold (mem-helper (curry eqv? obj) id) #f lst))
+(define (member obj lst) (fold (mem-helper (curry equal? obj) id) #f lst))
+(define (assq obj alist) (fold (mem-helper (curry eq? obj) car) #f alist))
+(define (assv obj alist) (fold (mem-helper (curry eqv? obj) car) #f alist))
+(define (assoc obj alist) (fold (mem-helper (curry equal? obj) car) #f alist))
+
