@@ -42,3 +42,8 @@
   (fold (lambda (old new) (if (> old new) old new)) first rest))
 (define (min first . rest)
   (fold (lambda (old new) (if (< old new) old new)) first rest))
+
+(define (length lst)
+  (fold (lambda (x y) (+ x 1)) 0 lst))
+(define (reverse lst)
+  (fold (flip cons) '() lst))
