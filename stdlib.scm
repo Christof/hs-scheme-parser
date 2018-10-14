@@ -14,3 +14,13 @@
 
 (define (odd? num) (= (mod num 2) 1))
 (define (even? num) (= (mod num 2) 0))
+
+(define (foldr func end lst)
+  (if (null? list)
+    end
+    (func (car lst) (foldr func end (cdr lst)))))
+
+(define (foldl func accum lst)
+  (if (null? lst)
+    accum
+    (foldl func (func accum (car last)) (cdr lst))))
