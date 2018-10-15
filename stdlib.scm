@@ -16,7 +16,7 @@
 (define (even? num) (= (mod num 2) 0))
 
 (define (foldr func end lst)
-  (if (null? list)
+  (if (null? lst)
     end
     (func (car lst) (foldr func end (cdr lst)))))
 
